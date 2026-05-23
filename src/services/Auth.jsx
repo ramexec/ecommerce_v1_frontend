@@ -5,10 +5,10 @@ import { getUserDetailsDecoded } from "./Services";
 
 const AuthContext = createContext(null)
 
-export const AuthProvider = ({children}) =>{
+export const AuthProvider = ({ children }) => {
 
-const [user,setUser ] = useState(null)
-const [loading,setLoading] = useState(true)
+    const [user, setUser] = useState(null)
+    const [loading, setLoading] = useState(true)
 
     useEffect(() => {
         const checkJwt = async () => {
@@ -25,42 +25,45 @@ const [loading,setLoading] = useState(true)
                 const decoded = await getUserDetailsDecoded();
                 setUser(decoded);
             } catch (err) {
-                localStorage.removeItem("jwt");
+                if (err.response?.status === 401) {
+                    localStorage.removeItem("jwt");
+                }
+
                 setUser(null);
             } finally {
                 setLoading(false);
             }
         };
 
-            checkJwt();
+        checkJwt();
     }, []);
 
 
-    const login = async (data) =>{
+    const login = async (data) => {
         setLoading(true)
-        try{
+        try {
             const res = await loginbackend(data);
-            localStorage.setItem("jwt",res.jwt)
+            localStorage.setItem("jwt", res.jwt)
             const decoded = await getUserDetailsDecoded();
             setUser(decoded);
             return true;
         }
-        catch(err){
+        catch (err) {
             throw err;
-        }finally{
+        } finally {
             setLoading(false)
         }
     }
 
     const signup = async (data) => {
         setLoading(true);
-        try{
+        try {
             const res = await signupbackend(data);
             return res;
         }
-        catch(err){
+        catch (err) {
             throw err;
-        }finally{
+        } finally {
             setLoading(false);
         }
     }
@@ -69,10 +72,10 @@ const [loading,setLoading] = useState(true)
         setUser(null);
     };
 
-    return <AuthContext.Provider value={{user, login , logout,signup, loading }}>{children}</AuthContext.Provider>
+    return <AuthContext.Provider value={{ user, login, logout, signup, loading }}>{children}</AuthContext.Provider>
 }
 
 
-export const useAuth = () =>{
+export const useAuth = () => {
     return useContext(AuthContext)
 }
